@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Configuración del Juego</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #E2E2E2;
+            color: #000000;
+            padding-top: 50px;
+        }
+
+        .config-container {
+            background-color: #FFFFFF;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            margin-top: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 100px);
+        }
+
+        h1 {
+            color: #FFBC00;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        input[type="text"], input[type="file"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #FFBC00;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #FCD307;
+            color: #000000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 10px 20px;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #FFBC00;
+        }
+
+        .question-box {
+            border: 1px solid #FFBC00;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #f9f9f9;
+        }
+
+        .question-box img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="config-container">
+        <h1>Configuración del Juego</h1>
+        <div class="form-group">
+            <label for="questionText">Texto de la Pregunta:</label>
+            <input type="text" id="questionText" name="questionText" placeholder="Ingrese el texto de la pregunta">
+        </div>
+        <div class="form-group">
+            <label for="questionImage">Subir Imagen de la Pregunta:</label>
+            <input type="file" id="questionImage" name="questionImage" accept="image/*">
+        </div>
+        <div id="optionsContainer">
+            <!-- Las opciones de configuración se cargarán aquí dinámicamente -->
+        </div>
+        <button type="button" onclick="addOption()">Añadir Opción</button>
+        <button type="button" onclick="saveConfiguration()">Guardar Configuración</button>
+        <div id="questionsPreview"></div>
+    </div>
+    <script>
+        let options = [];
+        let questions = JSON.parse(localStorage.getItem('questions')) || [];
+        let currentEditIndex = -1;
+
+        function addOption(text = '', correct = false) {
+            const container = document.getElementById('optionsContainer');
+            const optionIndex = options.length;
+
+            const div = document.createElement('div');
+            div.className = 'form-group';
+            div.innerHTML = `
+                <label for="optionText${optionIndex}">Texto de la Opción:</label>
+                <input type="text" id="optionText${optionIndex}" placeholder="Texto de la opción" value="${text}">
+                <label>
+                    <input type="checkbox" id="optionCorrect${optionIndex}" ${correct ? 'checked' : ''}>
+                    ¿Es Correcta?
+                </label>
+                <button type="button" onclick="removeOption(${optionIndex})">Eliminar</button>
+            `;
+            container.appendChild(div);
+            options.push({ text, correct });
+        }
+
+        function removeOption(index) {
+            options.splice(index, 1);
+            const container = document.getElementById('optionsContainer');
+            container.removeChild(container.children[index]);
+        }
+
+        function saveConfiguration() {
+            const questionText = document.getElementById('questionText').value;
+            const questionImageInput = document.getElementById('questionImage');
+            const file = questionImageInput.files[0];
+            let questionImage = '';
+
+            if (file) {
+                questionImage = URL.createObjectURL(file);
+            }
+
+            const options = Array.from({ length: document.querySelectorAll('[id^="optionText"]').length }, (_, index) => {
+                const optionText = document.getElementById(`optionText${index}`).value;
+                const optionCorrect = document.getElementById(`optionCorrect${index}`).checked;
+                return { text: optionText, correct: optionCorrect };
+            });
+
+            const question = {
+                questionText,
+                questionImage,
+                options
+            };
+
+            if (currentEditIndex >= 0) {
+                questions[currentEditIndex] = question;
+            } else {
+                questions.push(question);
+            }
+
+            localStorage.setItem('questions', JSON.stringify(questions));
+            displayQuestions();
+            alert('Configuración guardada!');
+            resetForm();
+        }
+
+        function displayQuestions() {
+            const previewContainer = document.getElementById('questionsPreview');
+            previewContainer.innerHTML = '';
+            questions.forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question-box';
+                questionDiv.innerHTML = `
+                    <h3>Pregunta ${index + 1}</h3>
+                    <p>${question.questionText}</p>
+                    ${question.questionImage ? `<img src="${question.questionImage}" alt="Imagen de la pregunta">` : ''}
+                    <div>
+                        ${question.options.map(option => `<p>${option.text} ${option.correct ? '(Correcta)' : ''}</p>`).join('')}
+                    </div>
+                    <button onclick="editQuestion(${index})">Editar</button>
+                    <button onclick="deleteQuestion(${index})">Eliminar</button>
+                `;
+                previewContainer.appendChild(questionDiv);
+            });
+        }
+
+        function editQuestion(index) {
+            const question = questions[index];
+            document.getElementById('questionText').value = question.questionText;
+
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            question.options.forEach((option, idx) => {
+                addOption(option.text, option.correct);
+            });
+
+            currentEditIndex = index;
+        }
+
+        function deleteQuestion(index) {
+            questions.splice(index, 1);
+            localStorage.setItem('questions', JSON.stringify(questions));
+            displayQuestions();
+        }
+
+        function resetForm() {
+            document.getElementById('questionText').value = '';
+            document.getElementById('questionImage').value = '';
+            document.getElementById('optionsContainer').innerHTML = '';
+            options = [];
+            currentEditIndex = -1;
+        }
+
+        document.addEventListener('DOMContentLoaded', displayQuestions);
+    </script>
+</body>
+</html>
