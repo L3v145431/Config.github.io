@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuración del Juego</title>
     <style>
         body {
@@ -13,16 +14,17 @@
             margin: 0;
             background-color: #E2E2E2;
             color: #000000;
-            padding-top: 50px;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .config-container {
             background-color: #FFFFFF;
-            padding: 30px;
+            padding: 20px;
             border-radius: 15px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             text-align: center;
-            width: 90%;
+            width: 100%;
             max-width: 600px;
             margin-top: 20px;
             overflow-y: auto;
@@ -32,11 +34,14 @@
         h1 {
             color: #FFBC00;
             margin-bottom: 20px;
+            font-size: 24px;
         }
 
         .form-group {
             margin-bottom: 15px;
             text-align: left;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         input[type="text"], input[type="file"] {
@@ -45,6 +50,7 @@
             margin-top: 5px;
             border: 1px solid #FFBC00;
             border-radius: 5px;
+            box-sizing: border-box;
         }
 
         button {
@@ -57,6 +63,7 @@
             padding: 10px 20px;
             margin: 5px;
             transition: background-color 0.3s;
+            font-size: 16px;
         }
 
         button:hover {
@@ -69,12 +76,24 @@
             padding: 15px;
             margin: 10px 0;
             background-color: #f9f9f9;
+            text-align: left;
         }
 
         .question-box img {
             max-width: 100%;
             height: auto;
             border-radius: 5px;
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 20px;
+            }
+
+            button {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
         }
     </style>
 </head>
@@ -104,7 +123,6 @@
         function addOption(text = '', correct = false) {
             const container = document.getElementById('optionsContainer');
             const optionIndex = options.length;
-
             const div = document.createElement('div');
             div.className = 'form-group';
             div.innerHTML = `
@@ -124,6 +142,13 @@
             options.splice(index, 1);
             const container = document.getElementById('optionsContainer');
             container.removeChild(container.children[index]);
+            // Re-index the remaining options
+            Array.from(container.children).forEach((child, idx) => {
+                child.querySelector('label').setAttribute('for', `optionText${idx}`);
+                child.querySelector('input[type="text"]').setAttribute('id', `optionText${idx}`);
+                child.querySelector('input[type="checkbox"]').setAttribute('id', `optionCorrect${idx}`);
+                child.querySelector('button').setAttribute('onclick', `removeOption(${idx})`);
+            });
         }
 
         function saveConfiguration() {
@@ -131,11 +156,9 @@
             const questionImageInput = document.getElementById('questionImage');
             const file = questionImageInput.files[0];
             let questionImage = '';
-
             if (file) {
                 questionImage = URL.createObjectURL(file);
             }
-
             const options = Array.from({ length: document.querySelectorAll('[id^="optionText"]').length }, (_, index) => {
                 const optionText = document.getElementById(`optionText${index}`).value;
                 const optionCorrect = document.getElementById(`optionCorrect${index}`).checked;
@@ -183,14 +206,11 @@
         function editQuestion(index) {
             const question = questions[index];
             document.getElementById('questionText').value = question.questionText;
-
             const optionsContainer = document.getElementById('optionsContainer');
             optionsContainer.innerHTML = '';
-
             question.options.forEach((option, idx) => {
                 addOption(option.text, option.correct);
             });
-
             currentEditIndex = index;
         }
 
