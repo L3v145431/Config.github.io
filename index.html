@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuración del Juego</title>
+    <title>Game Configuration</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -17,7 +17,6 @@
             padding: 20px;
             box-sizing: border-box;
         }
-
         .config-container {
             background-color: #FFFFFF;
             padding: 20px;
@@ -30,20 +29,17 @@
             overflow-y: auto;
             max-height: calc(100vh - 100px);
         }
-
         h1 {
             color: #FFBC00;
             margin-bottom: 20px;
             font-size: 24px;
         }
-
         .form-group {
             margin-bottom: 15px;
             text-align: left;
             width: 100%;
             box-sizing: border-box;
         }
-
         input[type="text"], input[type="file"] {
             width: calc(100% - 22px);
             padding: 10px;
@@ -52,7 +48,6 @@
             border-radius: 5px;
             box-sizing: border-box;
         }
-
         button {
             background-color: #FCD307;
             color: #000000;
@@ -65,11 +60,9 @@
             transition: background-color 0.3s;
             font-size: 16px;
         }
-
         button:hover {
             background-color: #FFBC00;
         }
-
         .question-box {
             border: 1px solid #FFBC00;
             border-radius: 10px;
@@ -78,18 +71,15 @@
             background-color: #f9f9f9;
             text-align: left;
         }
-
         .question-box img {
             max-width: 100%;
             height: auto;
             border-radius: 5px;
         }
-
         @media (max-width: 480px) {
             h1 {
                 font-size: 20px;
             }
-
             button {
                 font-size: 14px;
                 padding: 8px 16px;
@@ -99,20 +89,20 @@
 </head>
 <body>
     <div class="config-container">
-        <h1>Configuración del Juego</h1>
+        <h1>Game Configuration</h1>
         <div class="form-group">
-            <label for="questionText">Texto de la Pregunta:</label>
-            <input type="text" id="questionText" name="questionText" placeholder="Ingrese el texto de la pregunta">
+            <label for="questionText">Question Text:</label>
+            <input type="text" id="questionText" name="questionText" placeholder="Enter the question text">
         </div>
         <div class="form-group">
-            <label for="questionImage">Subir Imagen de la Pregunta:</label>
+            <label for="questionImage">Upload Question Image:</label>
             <input type="file" id="questionImage" name="questionImage" accept="image/*">
         </div>
         <div id="optionsContainer">
-            <!-- Las opciones de configuración se cargarán aquí dinámicamente -->
+            <!-- Configuration options will be loaded here dynamically -->
         </div>
-        <button type="button" onclick="addOption()">Añadir Opción</button>
-        <button type="button" onclick="saveConfiguration()">Guardar Configuración</button>
+        <button type="button" onclick="addOption()">Add Option</button>
+        <button type="button" onclick="saveConfiguration()">Save Configuration</button>
         <div id="questionsPreview"></div>
     </div>
     <script>
@@ -126,13 +116,13 @@
             const div = document.createElement('div');
             div.className = 'form-group';
             div.innerHTML = `
-                <label for="optionText${optionIndex}">Texto de la Opción:</label>
-                <input type="text" id="optionText${optionIndex}" placeholder="Texto de la opción" value="${text}">
+                <label for="optionText${optionIndex}">Option Text:</label>
+                <input type="text" id="optionText${optionIndex}" placeholder="Option text" value="${text}">
                 <label>
                     <input type="checkbox" id="optionCorrect${optionIndex}" ${correct ? 'checked' : ''}>
-                    ¿Es Correcta?
+                    Is it Correct?
                 </label>
-                <button type="button" onclick="removeOption(${optionIndex})">Eliminar</button>
+                <button type="button" onclick="removeOption(${optionIndex})">Remove</button>
             `;
             container.appendChild(div);
             options.push({ text, correct });
@@ -164,22 +154,19 @@
                 const optionCorrect = document.getElementById(`optionCorrect${index}`).checked;
                 return { text: optionText, correct: optionCorrect };
             });
-
             const question = {
                 questionText,
                 questionImage,
                 options
             };
-
             if (currentEditIndex >= 0) {
                 questions[currentEditIndex] = question;
             } else {
                 questions.push(question);
             }
-
             localStorage.setItem('questions', JSON.stringify(questions));
             displayQuestions();
-            alert('Configuración guardada!');
+            alert('Configuration saved!');
             resetForm();
         }
 
@@ -190,14 +177,14 @@
                 const questionDiv = document.createElement('div');
                 questionDiv.className = 'question-box';
                 questionDiv.innerHTML = `
-                    <h3>Pregunta ${index + 1}</h3>
+                    <h3>Question ${index + 1}</h3>
                     <p>${question.questionText}</p>
-                    ${question.questionImage ? `<img src="${question.questionImage}" alt="Imagen de la pregunta">` : ''}
+                    ${question.questionImage ? `<img src="${question.questionImage}" alt="Question image">` : ''}
                     <div>
-                        ${question.options.map(option => `<p>${option.text} ${option.correct ? '(Correcta)' : ''}</p>`).join('')}
+                        ${question.options.map(option => `<p>${option.text} ${option.correct ? '(Correct)' : ''}</p>`).join('')}
                     </div>
-                    <button onclick="editQuestion(${index})">Editar</button>
-                    <button onclick="deleteQuestion(${index})">Eliminar</button>
+                    <button onclick="editQuestion(${index})">Edit</button>
+                    <button onclick="deleteQuestion(${index})">Delete</button>
                 `;
                 previewContainer.appendChild(questionDiv);
             });
